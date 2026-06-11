@@ -14,6 +14,8 @@ def render():
     data = load_graph_cached()
     data = data.to(device)
 
+    labels = data.y.cpu().numpy()
+
     with st.spinner("Computing embeddings..."):
         embeddings = compute_embeddings(model, data, device)
 
@@ -34,7 +36,6 @@ def render():
         default=CLASS_NAMES[:6]
     )
     class_indices = [CLASS_NAMES.index(c) for c in classes_to_show]
-    labels = data.y.cpu().numpy()
 
     mask = np.isin(labels, class_indices)
     embeddings_subset = embeddings[mask]

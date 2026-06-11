@@ -41,9 +41,7 @@ def render():
             from sklearn.metrics import confusion_matrix
             cm = confusion_matrix(true, pred)
             st.dataframe(
-                cm,
-                index=list(CLASS_NAMES),
-                columns=list(CLASS_NAMES),
+                pd.DataFrame(cm, index=CLASS_NAMES, columns=CLASS_NAMES),
                 width='stretch'
             )
 
