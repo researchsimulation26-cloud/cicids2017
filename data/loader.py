@@ -149,6 +149,14 @@ def load_explain_data(use_hf=True, local_dir=None):
     X = joblib.load(X_path)
     y = joblib.load(y_path)
     shap_values = joblib.load(shap_path)
-    if shap_values.ndim == 3 and shap_values.shape[2] == len(CLASS_NAMES):
-        shap_values = shap_values.transpose(2, 0, 1)
+    if shap_values.ndim == 3:
+        ncls = len(CLASS_NAMES)
+        nfeat = len(FEATURE_COLS)
+        s = shap_values.shape
+        order = {v: i for i, v in enumerate(s)}
+        if ncls in order and nfeat in order:
+            cls_ax = order[ncls]
+            feat_ax = order[nfeat]
+            samp_ax = 3 - cls_ax - feat_ax
+            shap_values = shap_values.transpose(cls_ax, samp_ax, feat_ax)
     return X, y, shap_values
