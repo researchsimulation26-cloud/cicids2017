@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 import joblib
-import io
 from pathlib import Path
+from sklearn.preprocessing import LabelEncoder
 from huggingface_hub import hf_hub_download
 
 from config import HF_DATASET_REPO, HF_MODEL_REPO, FEATURE_COLS, CLASS_NAMES
@@ -19,20 +19,14 @@ def load_data(use_hf=True, local_dir=None, sample_size=None):
         parquet_path = str(Path(local_dir) / "cicids2017_final.parquet")
 
     df = pd.read_parquet(parquet_path)
-    df = df[df["Label"] != "Other_Attack"].copy()
+
+    label_col = "label_grouped" if "label_grouped" in df.columns else "Label"
+    df = df[df[label_col].isin(CLASS_NAMES)].copy()
     df = df.reset_index(drop=True)
 
-    if "label_grouped_enc" in df.columns:
-        le = joblib.load(download_artifact(HF_DATASET_REPO, "label_encoder_grouped.pkl"))
-        label_col = le.transform(df["Label"])
-    else:
-        from sklearn.preprocessing import LabelEncoder
-        le = LabelEncoder()
-        le.fit(CLASS_NAMES)
-        label_col = le.transform(df["Label"])
-        df = df[df["Label"].isin(CLASS_NAMES)].copy()
-
-    df["label_enc"] = label_col
+    le = LabelEncoder()
+    le.fit(CLASS_NAMES)
+    df["label_enc"] = le.transform(df[label_col])
 
     if sample_size and len(df) > sample_size:
         from sklearn.utils import resample
@@ -79,11 +73,35 @@ def load_graph(use_hf=True, local_dir=None):
     else:
         path = str(Path(local_dir) / "cicids_graph.pt")
     data = torch.load(path, map_location="cpu", weights_only=False)
+
+    OTHER_CLASS = 8
+    if data.num_classes > len(CLASS_NAMES):
+        mask = data.y != OTHER_CLASS
+        data.x = data.x[mask]
+        data.y = data.y[mask]
+        data.train_mask = data.train_mask[mask]
+        data.val_mask = data.val_mask[mask]
+        data.test_mask = data.test_mask[mask]
+
+        remap = torch.full((data.num_classes,), -1, dtype=torch.long)
+        new_idx = 0
+        for i in range(data.num_classes):
+            if i != OTHER_CLASS:
+                remap[i] = new_idx
+                new_idx += 1
+        data.y = remap[data.y]
+
+        old_nodes = torch.where(mask)[0]
+        node_map = torch.full((mask.shape[0],), -1, dtype=torch.long)
+        node_map[old_nodes] = torch.arange(old_nodes.shape[0])
+        edge_mask = mask[data.edge_index[0]] & mask[data.edge_index[1]]
+        data.edge_index = node_map[data.edge_index[:, edge_mask]]
+        data.num_classes = new_idx
+
     return data
 
 
 def load_explain_data(use_hf=True, local_dir=None):
-    import joblib
     if use_hf:
         X_path = download_artifact(HF_DATASET_REPO, "X_explain.pkl")
         y_path = download_artifact(HF_DATASET_REPO, "y_explain.pkl")
