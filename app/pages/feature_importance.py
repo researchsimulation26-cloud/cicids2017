@@ -24,7 +24,7 @@ def render():
             try:
                 X_explain, y_explain, shap_values = load_explain_cached()
                 fig = plot_shap_global_importance(shap_values, FEATURE_COLS, CLASS_NAMES)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             except Exception as e:
                 st.error(f"Could not load SHAP values: {e}")
                 st.info("Upload shap_values.pkl to your Hugging Face dataset repo.")
@@ -37,7 +37,7 @@ def render():
                 X_explain, y_explain, shap_values = load_explain_cached()
                 top_k = st.slider("Top K features", 5, 20, 15, 1)
                 fig = plot_shap_per_class_heatmap(shap_values, FEATURE_COLS, CLASS_NAMES, top_k=top_k)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
             except Exception as e:
                 st.error(f"Could not load SHAP values: {e}")
 
@@ -50,4 +50,4 @@ def render():
             data = data.to(device)
             saliency = compute_gradient_saliency(model, data)
             fig = plot_gradient_saliency(saliency, FEATURE_COLS, top_k=20)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')

@@ -44,7 +44,7 @@ def render():
             n_samples=min(n_samples, len(embeddings_subset))
         )
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.info(
         "t-SNE projects high-dimensional embeddings to 2D. "

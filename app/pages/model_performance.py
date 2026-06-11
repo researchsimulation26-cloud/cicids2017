@@ -32,7 +32,7 @@ def render():
     if viz_option == "Confusion Matrix":
         norm_mode = st.checkbox("Show normalized values", value=True)
         fig = plot_confusion_matrix(true, pred, CLASS_NAMES)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         with st.expander("Confusion Matrix Details"):
             from sklearn.metrics import confusion_matrix
@@ -41,12 +41,12 @@ def render():
                 cm,
                 index=list(CLASS_NAMES),
                 columns=list(CLASS_NAMES),
-                use_container_width=True
+                width='stretch'
             )
 
     elif viz_option == "Per-Class Metrics":
         fig = plot_per_class_metrics(true, pred, CLASS_NAMES)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         from sklearn.metrics import classification_report
         report = classification_report(
@@ -56,11 +56,11 @@ def render():
             output_dict=True
         )
         report_df = pd.DataFrame(report).T
-        st.dataframe(report_df, use_container_width=True)
+        st.dataframe(report_df, width='stretch')
 
     elif viz_option == "Support vs F1":
         fig = plot_support_vs_f1(true, pred, CLASS_NAMES)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         st.info(
             "Classes with low support tend to have lower F1 scores. "

@@ -31,19 +31,19 @@ def render():
         title="Number of Samples per Class"
     )
     fig.update_layout(xaxis_tickangle=45, height=450)
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     st.subheader("Feature Statistics")
     col_config = {"Label": st.column_config.TextColumn("Label")}
     st.dataframe(
         df[FEATURE_COLS].describe().T.reset_index().rename(columns={"index": "Feature"}),
-        use_container_width=True,
+        width='stretch',
         height=400
     )
 
     st.subheader("Raw Data Sample")
     st.dataframe(
         df[FEATURE_COLS + ["Label"]].head(100),
-        use_container_width=True,
+        width='stretch',
         height=300
     )

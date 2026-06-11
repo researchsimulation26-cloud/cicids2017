@@ -19,7 +19,7 @@ def render():
 
     with tab1:
         fig = plot_confidence_distribution(probs, true, pred)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         correct = (pred == true).sum()
         incorrect = (pred != true).sum()
@@ -39,7 +39,7 @@ def render():
 
     with tab2:
         fig = plot_accuracy_at_threshold(probs, true, pred)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         threshold = st.slider("Confidence Threshold", 0.0, 1.0, 0.5, 0.05)
         mask = probs.max(axis=1) >= threshold

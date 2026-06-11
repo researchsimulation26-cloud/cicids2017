@@ -49,7 +49,7 @@ def render():
 
     for cls_name, fig in zip(CLASS_NAMES, figs):
         with st.expander(f"View as {cls_name}", expanded=(cls_name == target_class)):
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
     st.info(
         "Red bars indicate features pushing the prediction **toward** the class, "
