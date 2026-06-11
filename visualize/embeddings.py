@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import plotly.graph_objects as go
+import plotly.express as px
 from sklearn.manifold import TSNE
 
 from model.cybersage import EmbeddingExtractor
