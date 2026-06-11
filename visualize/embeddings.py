@@ -23,7 +23,7 @@ def plot_tsne_embeddings(embeddings, labels, class_names, perplexity=40, n_sampl
     emb_sample = embeddings[idx]
     label_sample = labels[idx]
 
-    tsne = TSNE(n_components=2, perplexity=perplexity, random_state=42, n_iter=1000)
+    tsne = TSNE(n_components=2, perplexity=perplexity, random_state=42, max_iter=1000)
     emb_2d = tsne.fit_transform(emb_sample)
 
     colors = px.colors.qualitative.T10 + px.colors.qualitative.Set2
