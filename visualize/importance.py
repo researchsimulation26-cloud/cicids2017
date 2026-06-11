@@ -5,7 +5,7 @@ from config import CLASS_NAMES, FEATURE_COLS
 
 
 def plot_shap_global_importance(shap_values, feature_names, class_names, top_k=20):
-    global_mean = np.abs(shap_values).mean(axis=(0, 2))
+    global_mean = np.abs(shap_values).mean(axis=(0, 1))
     sorted_idx = np.argsort(global_mean)[::-1][:top_k]
 
     fig = go.Figure(go.Bar(
@@ -28,7 +28,7 @@ def plot_shap_global_importance(shap_values, feature_names, class_names, top_k=2
 
 
 def plot_shap_per_class_heatmap(shap_values, feature_names, class_names, top_k=15):
-    global_mean = np.abs(shap_values).mean(axis=(0, 2))
+    global_mean = np.abs(shap_values).mean(axis=(0, 1))
     top_features = np.argsort(global_mean)[::-1][:top_k]
 
     shap_per_class = np.array([np.abs(sv).mean(axis=0) for sv in shap_values])

@@ -149,4 +149,6 @@ def load_explain_data(use_hf=True, local_dir=None):
     X = joblib.load(X_path)
     y = joblib.load(y_path)
     shap_values = joblib.load(shap_path)
+    if shap_values.ndim == 3 and shap_values.shape[2] == len(CLASS_NAMES):
+        shap_values = shap_values.transpose(2, 0, 1)
     return X, y, shap_values
