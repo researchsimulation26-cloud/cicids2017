@@ -10,17 +10,22 @@ def render():
     st.title("Embedding Space")
     st.markdown("t-SNE visualization of the GNN's learned node embeddings.")
 
-    model, device = load_model_cached()
-    data = load_graph_cached()
-    data = data.to(device)
+    try:
+        model, device = load_model_cached()
+        data = load_graph_cached()
+        data = data.to(device)
 
-    labels = data.y.cpu().numpy()
+        labels = data.y.cpu().numpy()
 
-    with st.spinner("Computing embeddings..."):
-        embeddings = compute_embeddings(model, data, device)
+        with st.spinner("Computing embeddings..."):
+            embeddings = compute_embeddings(model, data, device)
 
-    del data
-    clear_memory()
+        del data
+        clear_memory()
+    except Exception as e:
+        st.error("Failed to load model or graph for Embedding Space.")
+        st.exception(e)
+        return
 
     st.success(f"Embeddings computed: {embeddings.shape[0]} nodes x {embeddings.shape[1]} dimensions")
 

@@ -45,11 +45,15 @@ def render():
         st.subheader("Gradient Saliency")
         st.markdown("Mean absolute gradient of the loss w.r.t. each input feature.")
         with st.spinner("Computing saliency map..."):
-            model, device = load_model_cached()
-            data = load_graph_cached()
-            data = data.to(device)
-            saliency = compute_gradient_saliency(model, data)
-            del data
-            clear_memory()
-            fig = plot_gradient_saliency(saliency, FEATURE_COLS, top_k=20)
-            st.plotly_chart(fig, width='stretch')
+            try:
+                model, device = load_model_cached()
+                data = load_graph_cached()
+                data = data.to(device)
+                saliency = compute_gradient_saliency(model, data)
+                del data
+                clear_memory()
+                fig = plot_gradient_saliency(saliency, FEATURE_COLS, top_k=20)
+                st.plotly_chart(fig, width='stretch')
+            except Exception as e:
+                st.error("Failed to compute gradient saliency.")
+                st.exception(e)

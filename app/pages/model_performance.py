@@ -15,14 +15,19 @@ def render():
     st.title("Model Performance")
     st.markdown("Evaluation metrics for CyberSAGE on the CIC-IDS2017 test set.")
 
-    model, device = load_model_cached()
-    data = load_graph_cached()
+    try:
+        model, device = load_model_cached()
+        data = load_graph_cached()
 
-    data = data.to(device)
-    probs, pred, true = get_test_results(model, data, device)
+        data = data.to(device)
+        probs, pred, true = get_test_results(model, data, device)
 
-    del data
-    clear_memory()
+        del data
+        clear_memory()
+    except Exception as e:
+        st.error("Failed to load model or graph for Model Performance.")
+        st.exception(e)
+        return
 
     st.success(f"Test set: {len(true):,} samples")
 

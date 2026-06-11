@@ -8,14 +8,19 @@ def render():
     st.title("Confidence Analysis")
     st.markdown("Analyze the model's prediction confidence across correct and incorrect predictions.")
 
-    model, device = load_model_cached()
-    data = load_graph_cached()
-    data = data.to(device)
+    try:
+        model, device = load_model_cached()
+        data = load_graph_cached()
+        data = data.to(device)
 
-    probs, pred, true = get_test_results(model, data, device)
+        probs, pred, true = get_test_results(model, data, device)
 
-    del data
-    clear_memory()
+        del data
+        clear_memory()
+    except Exception as e:
+        st.error("Failed to load model or graph for Confidence Analysis.")
+        st.exception(e)
+        return
 
     st.success(f"Analyzing {len(true):,} test samples")
 
