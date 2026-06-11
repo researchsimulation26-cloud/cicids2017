@@ -152,11 +152,17 @@ def load_explain_data(use_hf=True, local_dir=None):
     if shap_values.ndim == 3:
         ncls = len(CLASS_NAMES)
         nfeat = len(FEATURE_COLS)
-        s = shap_values.shape
-        order = {v: i for i, v in enumerate(s)}
-        if ncls in order and nfeat in order:
-            cls_ax = order[ncls]
-            feat_ax = order[nfeat]
-            samp_ax = 3 - cls_ax - feat_ax
-            shap_values = shap_values.transpose(cls_ax, samp_ax, feat_ax)
+        nsamp = X.shape[0]
+        axes = {}
+        for i, v in enumerate(shap_values.shape):
+            if v == ncls and 'cls' not in axes:
+                axes['cls'] = i
+            elif v == nfeat and 'feat' not in axes:
+                axes['feat'] = i
+            elif v == nsamp and 'samp' not in axes:
+                axes['samp'] = i
+        if len(axes) == 3:
+            shap_values = shap_values.transpose(
+                axes['cls'], axes['samp'], axes['feat']
+            )
     return X, y, shap_values
