@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-from app.utils import load_data_cached, load_model_cached, load_graph_cached, get_test_results
+from app.utils import load_data_cached, load_model_cached, load_graph_cached, get_test_results, clear_memory
 from visualize.performance import (
     plot_confusion_matrix,
     plot_per_class_metrics,
@@ -20,6 +20,9 @@ def render():
 
     data = data.to(device)
     probs, pred, true = get_test_results(model, data, device)
+
+    del data
+    clear_memory()
 
     st.success(f"Test set: {len(true):,} samples")
 

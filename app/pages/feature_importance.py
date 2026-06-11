@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 
-from app.utils import load_model_cached, load_graph_cached, load_explain_cached
+from app.utils import load_model_cached, load_graph_cached, load_explain_cached, clear_memory
 from explain.saliency import compute_gradient_saliency
 from visualize.importance import (
     plot_shap_global_importance,
@@ -49,5 +49,7 @@ def render():
             data = load_graph_cached()
             data = data.to(device)
             saliency = compute_gradient_saliency(model, data)
+            del data
+            clear_memory()
             fig = plot_gradient_saliency(saliency, FEATURE_COLS, top_k=20)
             st.plotly_chart(fig, width='stretch')

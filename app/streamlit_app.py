@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-from app.utils import init_session, login_hf
+from app.utils import init_session, login_hf, clear_memory
 from app.pages import (
     data_overview,
     model_performance,
@@ -21,6 +21,7 @@ from app.pages import (
     individual_explanations
 )
 
+clear_memory()
 init_session()
 login_hf()
 

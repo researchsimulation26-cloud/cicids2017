@@ -1,6 +1,6 @@
 import streamlit as st
 
-from app.utils import load_model_cached, load_graph_cached, get_test_results
+from app.utils import load_model_cached, load_graph_cached, get_test_results, clear_memory
 from visualize.confidence import plot_confidence_distribution, plot_accuracy_at_threshold
 
 
@@ -13,6 +13,10 @@ def render():
     data = data.to(device)
 
     probs, pred, true = get_test_results(model, data, device)
+
+    del data
+    clear_memory()
+
     st.success(f"Analyzing {len(true):,} test samples")
 
     tab1, tab2 = st.tabs(["Confidence Distribution", "Accuracy vs Threshold"])

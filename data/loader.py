@@ -5,7 +5,7 @@ from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 from huggingface_hub import hf_hub_download
 
-from config import HF_DATASET_REPO, HF_MODEL_REPO, FEATURE_COLS, CLASS_NAMES
+from config import HF_DATASET_REPO, HF_MODEL_REPO, FEATURE_COLS, CLASS_NAMES, SUBSAMPLE_SIZE
 
 
 def download_artifact(repo_id, filename, repo_type="dataset"):
@@ -13,6 +13,9 @@ def download_artifact(repo_id, filename, repo_type="dataset"):
 
 
 def load_data(use_hf=True, local_dir=None, sample_size=None):
+    if sample_size is None:
+        sample_size = SUBSAMPLE_SIZE
+
     if use_hf:
         parquet_path = download_artifact(HF_DATASET_REPO, "cicids2017_final.parquet")
     else:
@@ -28,7 +31,7 @@ def load_data(use_hf=True, local_dir=None, sample_size=None):
     le.fit(CLASS_NAMES)
     df["label_enc"] = le.transform(df[label_col])
 
-    if sample_size and len(df) > sample_size:
+    if len(df) > sample_size:
         from sklearn.utils import resample
         df = resample(df, n_samples=sample_size, random_state=42, stratify=df["label_enc"])
 
@@ -66,8 +69,37 @@ def load_model(use_hf=True, local_dir=None):
     return model, device
 
 
-def load_graph(use_hf=True, local_dir=None):
+def _subsample_graph(data, max_nodes):
+    if data.num_nodes <= max_nodes:
+        return data
     import torch
+
+    n = data.num_nodes
+    rng = np.random.default_rng(42)
+    chosen = rng.choice(n, max_nodes, replace=False)
+    chosen = torch.tensor(chosen, dtype=torch.long)
+
+    node_map = torch.full((n,), -1, dtype=torch.long)
+    node_map[chosen] = torch.arange(max_nodes)
+
+    data.x = data.x[chosen]
+    data.y = data.y[chosen]
+    data.train_mask = data.train_mask[chosen]
+    data.val_mask = data.val_mask[chosen]
+    data.test_mask = data.test_mask[chosen]
+
+    edge_mask = node_map[data.edge_index[0]] != -1
+    edge_mask &= node_map[data.edge_index[1]] != -1
+    data.edge_index = node_map[data.edge_index[:, edge_mask]]
+
+    return data
+
+
+def load_graph(use_hf=True, local_dir=None, max_nodes=None):
+    import torch
+    if max_nodes is None:
+        max_nodes = SUBSAMPLE_SIZE
+
     if use_hf:
         path = download_artifact(HF_DATASET_REPO, "cicids_graph.pt")
     else:
@@ -97,6 +129,8 @@ def load_graph(use_hf=True, local_dir=None):
         edge_mask = mask[data.edge_index[0]] & mask[data.edge_index[1]]
         data.edge_index = node_map[data.edge_index[:, edge_mask]]
         data.num_classes = new_idx
+
+    data = _subsample_graph(data, max_nodes)
 
     return data
 

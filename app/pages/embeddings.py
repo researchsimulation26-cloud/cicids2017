@@ -1,7 +1,7 @@
 import streamlit as st
 import numpy as np
 
-from app.utils import load_model_cached, load_graph_cached
+from app.utils import load_model_cached, load_graph_cached, clear_memory
 from visualize.embeddings import compute_embeddings, plot_tsne_embeddings
 from config import CLASS_NAMES
 
@@ -16,6 +16,9 @@ def render():
 
     with st.spinner("Computing embeddings..."):
         embeddings = compute_embeddings(model, data, device)
+
+    del data
+    clear_memory()
 
     st.success(f"Embeddings computed: {embeddings.shape[0]} nodes x {embeddings.shape[1]} dimensions")
 

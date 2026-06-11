@@ -41,3 +41,6 @@ TRAINING_CONFIG = {
     "k_same": 5,
     "k_cross": 2
 }
+
+# Memory management — subsample to avoid OOM on low-resource hosts
+SUBSAMPLE_SIZE = 50000          # nodes / rows to keep from the full dataset

@@ -1,4 +1,5 @@
 import sys
+import gc
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -9,7 +10,7 @@ import pandas as pd
 import numpy as np
 from huggingface_hub import hf_hub_download, login
 
-from config import HF_DATASET_REPO, HF_MODEL_REPO, FEATURE_COLS, CLASS_NAMES
+from config import HF_DATASET_REPO, HF_MODEL_REPO, FEATURE_COLS, CLASS_NAMES, SUBSAMPLE_SIZE
 from data.loader import load_data, load_model, load_explain_data
 from model.cybersage import CyberSAGE
 
@@ -31,6 +32,12 @@ def login_hf():
         login(token, add_to_git_credential=False)
 
 
+def clear_memory():
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+
 @st.cache_resource(ttl="1d")
 def load_data_cached():
     login_hf()
@@ -42,6 +49,7 @@ def load_data_cached():
 def load_model_cached():
     login_hf()
     model, device = load_model(use_hf=True)
+    clear_memory()
     return model, device
 
 
@@ -56,7 +64,9 @@ def load_explain_cached():
 def load_graph_cached():
     login_hf()
     from data.loader import load_graph
-    return load_graph(use_hf=True)
+    data = load_graph(use_hf=True)
+    clear_memory()
+    return data
 
 
 def get_class_distribution(df, label_col="label_enc"):
