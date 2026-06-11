@@ -135,6 +135,50 @@ def load_graph(use_hf=True, local_dir=None, max_nodes=None):
     return data
 
 
+def build_graph_from_df(df, k=5):
+    from sklearn.neighbors import NearestNeighbors
+    import torch
+    from torch_geometric.data import Data
+
+    X = df[FEATURE_COLS].values.astype(np.float32)
+    y = df["label_enc"].values
+
+    norms = np.linalg.norm(X, axis=1, keepdims=True)
+    norms[norms == 0] = 1e-8
+    X_n = X / norms
+
+    nn = NearestNeighbors(n_neighbors=min(k + 1, len(X_n)), metric="cosine")
+    nn.fit(X_n)
+    _, indices = nn.kneighbors(X_n)
+
+    n = len(X_n)
+    src = np.repeat(np.arange(n), k)
+    dst = indices[:, 1:k + 1].flatten()
+    edge_index = torch.tensor(np.stack([src, dst], axis=0), dtype=torch.long)
+
+    perm = torch.randperm(n)
+    n_train = max(1, int(n * 0.8))
+    n_val = max(1, int(n * 0.1))
+
+    train_mask = torch.zeros(n, dtype=torch.bool)
+    val_mask = torch.zeros(n, dtype=torch.bool)
+    test_mask = torch.zeros(n, dtype=torch.bool)
+    train_mask[perm[:n_train]] = True
+    val_mask[perm[n_train:n_train + n_val]] = True
+    test_mask[perm[n_train + n_val:]] = True
+
+    data = Data(
+        x=torch.tensor(X_n, dtype=torch.float32),
+        y=torch.tensor(y, dtype=torch.long),
+        edge_index=edge_index,
+        train_mask=train_mask,
+        val_mask=val_mask,
+        test_mask=test_mask,
+        num_classes=len(CLASS_NAMES),
+    )
+    return data
+
+
 def load_explain_data(use_hf=True, local_dir=None):
     if use_hf:
         X_path = download_artifact(HF_DATASET_REPO, "X_explain.pkl")

@@ -63,8 +63,9 @@ def load_explain_cached():
 @st.cache_resource(ttl="1d")
 def load_graph_cached():
     login_hf()
-    from data.loader import load_graph
-    data = load_graph(use_hf=True)
+    df, _ = load_data_cached()
+    from data.loader import build_graph_from_df
+    data = build_graph_from_df(df, k=5)
     clear_memory()
     return data
 
